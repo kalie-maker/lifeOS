@@ -1,0 +1,198 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/*  LifeOS design tokens                                               */
+/* ------------------------------------------------------------------ */
+@theme {
+  --color-bg: #fafaf8;
+  --color-surface: #ffffff;
+  --color-border: #e8e4de;
+
+  --color-ink: #1a1814;
+  --color-ink-2: #6b6560;
+  --color-ink-3: #a09b96;
+
+  --color-accent: #1b3a6b;
+  --color-accent-2: #2d5ba3;
+
+  --color-ok: #1a7a4a;
+  --color-warn: #b45309;
+  --color-danger: #c0392b;
+  --color-gold: #c9a84c;
+
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-md: 17px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-2xl: 30px;
+  --text-display: 38px;
+
+  --radius-card: 16px;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-playfair), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Base                                                               */
+/* ------------------------------------------------------------------ */
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Calm, deliberate scrollbars — never industrial */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 999px;
+}
+
+/* Remove tap highlight on mobile for a native feel */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Motion — calm, never anxious                                       */
+/* ------------------------------------------------------------------ */
+@keyframes los-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes los-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes los-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes los-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes los-pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  70% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes los-flow {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-46px) scale(1);
+  }
+}
+@keyframes los-caret {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.los-fade-in {
+  animation: los-fade-in 0.4s ease both;
+}
+.los-rise {
+  animation: los-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.los-sheet-up {
+  animation: los-sheet-up 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.los-scale-in {
+  animation: los-scale-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.los-stagger > * {
+  animation: los-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.los-stagger > *:nth-child(1) {
+  animation-delay: 0.04s;
+}
+.los-stagger > *:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.los-stagger > *:nth-child(3) {
+  animation-delay: 0.16s;
+}
+.los-stagger > *:nth-child(4) {
+  animation-delay: 0.22s;
+}
+.los-stagger > *:nth-child(5) {
+  animation-delay: 0.28s;
+}
+.los-stagger > *:nth-child(6) {
+  animation-delay: 0.34s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
