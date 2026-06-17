@@ -7,6 +7,7 @@ import { useOnboarding } from "./OnboardingProvider";
 import { DeviceFrame } from "./DeviceFrame";
 import { BottomNav } from "./BottomNav";
 import { Splash } from "./Splash";
+import { Toast } from "./ui/Toast";
 
 /**
  * The persistent app shell. Gates the app behind onboarding: a brand-new user
@@ -34,6 +35,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {children}
       </main>
       <BottomNav />
+      <Toast />
     </DeviceFrame>
   );
 }

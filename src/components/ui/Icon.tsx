@@ -35,7 +35,8 @@ export type IconName =
   | "clock"
   | "gift"
   | "search"
-  | "shield";
+  | "shield"
+  | "box";
 
 const paths: Record<IconName, React.ReactNode> = {
   home: <path d="M4 11.5 12 4l8 7.5V20a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z" />,
@@ -177,6 +178,12 @@ const paths: Record<IconName, React.ReactNode> = {
     </>
   ),
   shield: <path d="M12 3.5 19 6v5.5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z" />,
+  box: (
+    <>
+      <path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5z" />
+      <path d="M3.5 7.5 12 12l8.5-4.5M12 12v9" />
+    </>
+  ),
 };
 
 interface IconProps extends Omit<SVGProps<SVGSVGElement>, "name"> {
