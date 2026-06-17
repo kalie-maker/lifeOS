@@ -1,11 +1,12 @@
 import { ScreenScaffold } from "@/components/ScreenScaffold";
+import { HomeGreeting } from "@/components/HomeGreeting";
 
 export default function InicioPage() {
   return (
     <ScreenScaffold
       hero
       eyebrow="Inicio"
-      title="Buenas tardes."
+      titleNode={<HomeGreeting />}
       icon="home"
       intro="Su resumen del día, sin que tenga que buscarlo."
       points={[

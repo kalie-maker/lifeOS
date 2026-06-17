@@ -1,10 +1,13 @@
+import type { ReactNode } from "react";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { ModuleGlyph, Pill, SectionLabel } from "@/components/ui/primitives";
 import { Stagger, StaggerItem } from "@/components/ui/motion";
 
 interface ScreenScaffoldProps {
   eyebrow?: string;
-  title: string;
+  title?: string;
+  /** custom title content (e.g. a client greeting); overrides `title` */
+  titleNode?: ReactNode;
   /** render the title in the display serif (used for Inicio) */
   hero?: boolean;
   intro: string;
@@ -16,6 +19,7 @@ interface ScreenScaffoldProps {
 export function ScreenScaffold({
   eyebrow,
   title,
+  titleNode,
   hero,
   intro,
   icon,
@@ -30,7 +34,7 @@ export function ScreenScaffold({
             hero ? "text-display leading-[1.05]" : "text-2xl"
           }`}
         >
-          {title}
+          {titleNode ?? title}
         </h1>
         <p className="mt-2 max-w-[22rem] text-base leading-relaxed text-ink-2">
           {intro}

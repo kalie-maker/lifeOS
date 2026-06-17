@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display, JetBrains_Mono } from "next/font/google";
+import { Providers } from "@/components/Providers";
 import "./globals.css";
 
 const inter = Inter({
@@ -45,7 +46,9 @@ export default function RootLayout({
       lang="es"
       className={`${inter.variable} ${playfair.variable} ${jetbrains.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
