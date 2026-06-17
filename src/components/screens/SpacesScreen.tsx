@@ -1,9 +1,12 @@
 "use client";
 
+import { motion } from "motion/react";
 import { useApp } from "@/state/AppContext";
 import type { SpaceData } from "@/state/types";
 import { Icon } from "@/components/ui/Icon";
 import { SectionLabel, StatusDot } from "@/components/ui/primitives";
+import { Stagger, StaggerItem } from "@/components/ui/motion";
+import { tapCard } from "@/lib/motion";
 import { spaceIcons } from "@/data/mock/spaces";
 
 function spaceSeverity(s: SpaceData): "danger" | "warn" | "ok" {
@@ -21,9 +24,10 @@ function SpaceCard({ space }: { space: SpaceData }) {
   const empty = space.itemCount === 0;
 
   return (
-    <button
+    <motion.button
       onClick={() => openSpace(space.id)}
-      className="flex h-full flex-col rounded-2xl border border-border bg-surface p-4 text-left transition-[border-color,transform] hover:border-ink-3 active:scale-[0.99]"
+      whileTap={tapCard}
+      className="flex h-full w-full flex-col rounded-2xl border border-border bg-surface p-4 text-left transition-colors hover:border-ink-3"
     >
       <div className="flex items-center justify-between">
         <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-bg text-ink-2">
@@ -52,7 +56,7 @@ function SpaceCard({ space }: { space: SpaceData }) {
       ) : (
         <p className="mt-2 text-sm leading-snug text-ink-3">{space.blurb}</p>
       )}
-    </button>
+    </motion.button>
   );
 }
 
@@ -66,11 +70,13 @@ export function SpacesScreen() {
         Cada ámbito de su vida, organizado por LifeOS.
       </p>
 
-      <div className="mt-6 grid grid-cols-2 gap-3">
+      <Stagger className="mt-6 grid grid-cols-2 gap-3">
         {spacesList.map((s) => (
-          <SpaceCard key={s.id} space={s} />
+          <StaggerItem key={s.id} className="flex">
+            <SpaceCard space={s} />
+          </StaggerItem>
         ))}
-      </div>
+      </Stagger>
 
       <div className="mt-6">
         <SectionLabel>Sobre los espacios</SectionLabel>

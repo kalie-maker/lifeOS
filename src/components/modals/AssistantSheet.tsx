@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { useApp } from "@/state/AppContext";
 import { Sheet } from "@/components/ui/Sheet";
 import { Icon } from "@/components/ui/Icon";
+import { Stagger, StaggerItem, TypingDots } from "@/components/ui/motion";
+import { bubbleVariants } from "@/lib/motion";
 import type { AssistantAnswer, AssistantMessage } from "@/state/types";
 import { answerQuestion, assistantSuggestions } from "@/lib/assistant";
 
@@ -113,68 +116,94 @@ export function AssistantSheet() {
         {/* Conversation */}
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-5 pb-2">
           {messages.length === 0 && (
-            <div className="los-fade-in py-2">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="py-2"
+            >
               <p className="text-base leading-relaxed text-ink-2">
                 Soy LifeOS. Conozco su día, sus espacios y sus documentos.
                 Pregúnteme lo que necesite.
               </p>
-              <div className="mt-4 space-y-2">
+              <Stagger className="mt-4 space-y-2">
                 {assistantSuggestions.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => ask(s)}
-                    className="flex w-full items-center justify-between gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-left text-sm text-ink transition-colors hover:border-ink-3"
-                  >
-                    {s}
-                    <Icon name="arrow-right" size={15} className="text-ink-3" />
-                  </button>
+                  <StaggerItem key={s}>
+                    <motion.button
+                      onClick={() => ask(s)}
+                      whileTap={{ scale: 0.985 }}
+                      className="flex w-full items-center justify-between gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-left text-sm text-ink transition-colors hover:border-ink-3"
+                    >
+                      {s}
+                      <Icon name="arrow-right" size={15} className="text-ink-3" />
+                    </motion.button>
+                  </StaggerItem>
                 ))}
-              </div>
-            </div>
+              </Stagger>
+            </motion.div>
           )}
 
           <div className="space-y-4 py-2">
             {messages.map((m) =>
               m.role === "user" ? (
-                <div key={m.id} className="flex justify-end">
-                  <div className="los-rise max-w-[82%] rounded-2xl rounded-br-md bg-accent px-4 py-2.5 text-base text-white">
+                <motion.div
+                  key={m.id}
+                  variants={bubbleVariants}
+                  initial="initial"
+                  animate="animate"
+                  className="flex justify-end"
+                >
+                  <div className="max-w-[82%] rounded-2xl rounded-br-md bg-accent px-4 py-2.5 text-base text-white">
                     {m.text}
                   </div>
-                </div>
+                </motion.div>
               ) : (
-                <div key={m.id} className="flex justify-start">
-                  <div className="los-rise max-w-[92%] rounded-2xl rounded-bl-md border border-border bg-surface px-4 py-3.5">
+                <motion.div
+                  key={m.id}
+                  variants={bubbleVariants}
+                  initial="initial"
+                  animate="animate"
+                  className="flex justify-start"
+                >
+                  <div className="max-w-[92%] rounded-2xl rounded-bl-md border border-border bg-surface px-4 py-3.5">
                     {m.answer ? <AnswerBlock answer={m.answer} /> : m.text}
                   </div>
-                </div>
+                </motion.div>
               ),
             )}
-            {thinking && (
-              <div className="flex justify-start">
-                <div className="flex gap-1 rounded-2xl rounded-bl-md border border-border bg-surface px-4 py-3.5">
-                  {[0, 1, 2].map((i) => (
-                    <span
-                      key={i}
-                      className="h-1.5 w-1.5 rounded-full bg-ink-3"
-                      style={{
-                        animation: `los-fade-in 0.9s ease-in-out ${i * 0.18}s infinite alternate`,
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+            <AnimatePresence>
+              {thinking && (
+                <motion.div
+                  key="thinking"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="flex justify-start"
+                >
+                  <div className="rounded-2xl rounded-bl-md border border-border bg-surface px-4 py-4">
+                    <TypingDots />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
         {/* Composer */}
         <div className="border-t border-border bg-surface px-4 py-3">
-          {speaking && (
-            <div className="mb-2 flex items-center justify-center gap-2 text-xs text-accent">
-              <Icon name="chat" size={14} />
-              Reproduciendo respuesta…
-            </div>
-          )}
+          <AnimatePresence>
+            {speaking && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-2 flex items-center justify-center gap-2 overflow-hidden text-xs text-accent"
+              >
+                <Icon name="chat" size={14} />
+                Reproduciendo respuesta…
+              </motion.div>
+            )}
+          </AnimatePresence>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -188,22 +217,30 @@ export function AssistantSheet() {
               placeholder="Escriba su pregunta…"
               className="min-w-0 flex-1 rounded-full border border-border bg-bg px-4 py-2.5 text-base text-ink outline-none placeholder:text-ink-3 focus:border-accent"
             />
-            <button
+            <motion.button
               type="button"
               onClick={simulateVoice}
               aria-label="Voz"
+              whileTap={{ scale: 0.9 }}
+              animate={speaking ? { scale: [1, 1.12, 1] } : { scale: 1 }}
+              transition={
+                speaking
+                  ? { duration: 1, repeat: Infinity, ease: "easeInOut" }
+                  : { duration: 0.2 }
+              }
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border text-ink-2 transition-colors hover:border-ink-3"
             >
               <Icon name="mic" size={18} />
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               type="submit"
               aria-label="Enviar"
               disabled={!input.trim()}
+              whileTap={{ scale: 0.9 }}
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-white transition-colors disabled:opacity-40"
             >
               <Icon name="arrow-right" size={18} />
-            </button>
+            </motion.button>
           </form>
         </div>
       </div>

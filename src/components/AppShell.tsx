@@ -1,6 +1,8 @@
 "use client";
 
+import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { useApp } from "@/state/AppContext";
+import { screenVariants } from "@/lib/motion";
 import { BottomNav } from "./BottomNav";
 import { Onboarding } from "./Onboarding";
 import { HomeScreen } from "./screens/HomeScreen";
@@ -13,41 +15,75 @@ import { AssistantSheet } from "./modals/AssistantSheet";
 import { ProfileSheet } from "./modals/ProfileSheet";
 import { Toast } from "./ui/Toast";
 
+const screens = {
+  inicio: HomeScreen,
+  calendario: CalendarScreen,
+  capturar: CaptureScreen,
+  espacios: SpacesScreen,
+  persona: PersonaScreen,
+} as const;
+
 export function AppShell() {
   const { onboarded, tab, spaceDetail, spaces } = useApp();
+  const Screen = screens[tab];
 
   return (
-    <div className="flex min-h-[100dvh] w-full items-center justify-center bg-[#ECEAE5] sm:p-6">
-      <div className="relative h-[100dvh] w-full max-w-[430px] overflow-hidden bg-bg sm:h-[880px] sm:max-h-[calc(100dvh-3rem)] sm:rounded-[44px] sm:border sm:border-[#dcd8d1] sm:shadow-[0_30px_80px_rgba(0,0,0,0.18)]">
-        {!onboarded ? (
-          <div className="absolute inset-0">
-            <Onboarding />
-          </div>
-        ) : (
-          <>
-            <main
-              key={tab}
-              className="los-fade-in absolute inset-0 overflow-y-auto pt-[max(8px,env(safe-area-inset-top))] pb-[96px]"
-            >
-              {tab === "inicio" && <HomeScreen />}
-              {tab === "calendario" && <CalendarScreen />}
-              {tab === "capturar" && <CaptureScreen />}
-              {tab === "espacios" && <SpacesScreen />}
-              {tab === "persona" && <PersonaScreen />}
-            </main>
+    <MotionConfig reducedMotion="user">
+      <div className="flex min-h-[100dvh] w-full items-center justify-center bg-[#ECEAE5] sm:p-6">
+        <div className="relative h-[100dvh] w-full max-w-[430px] overflow-hidden bg-bg sm:h-[880px] sm:max-h-[calc(100dvh-3rem)] sm:rounded-[44px] sm:border sm:border-[#dcd8d1] sm:shadow-[0_30px_80px_rgba(0,0,0,0.18)]">
+          <AnimatePresence mode="wait" initial={false}>
+            {!onboarded ? (
+              <motion.div
+                key="onboarding"
+                className="absolute inset-0"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, transition: { duration: 0.3 } }}
+                exit={{ opacity: 0, transition: { duration: 0.2 } }}
+              >
+                <Onboarding />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="app"
+                className="absolute inset-0"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, transition: { duration: 0.3 } }}
+                exit={{ opacity: 0, transition: { duration: 0.2 } }}
+              >
+                {/* Screen transitions */}
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.main
+                    key={tab}
+                    variants={screenVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    className="absolute inset-0 overflow-y-auto pt-[max(8px,env(safe-area-inset-top))] pb-[96px]"
+                  >
+                    <Screen />
+                  </motion.main>
+                </AnimatePresence>
 
-            <BottomNav />
+                <BottomNav />
 
-            {spaceDetail && (
-              <SpaceDetailScreen space={spaces[spaceDetail]} />
+                {/* Space detail overlay */}
+                <AnimatePresence>
+                  {spaceDetail && (
+                    <SpaceDetailScreen
+                      key="space-detail"
+                      space={spaces[spaceDetail]}
+                    />
+                  )}
+                </AnimatePresence>
+
+                <AssistantSheet />
+                <ProfileSheet />
+                <Toast />
+              </motion.div>
             )}
-
-            <AssistantSheet />
-            <ProfileSheet />
-            <Toast />
-          </>
-        )}
+          </AnimatePresence>
+        </div>
       </div>
-    </div>
+    </MotionConfig>
   );
 }

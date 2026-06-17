@@ -1,18 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "motion/react";
 import { useApp } from "@/state/AppContext";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { Stagger, StaggerItem } from "@/components/ui/motion";
+import { tapCard } from "@/lib/motion";
 import { VoiceCaptureModal } from "@/components/modals/VoiceCaptureModal";
 import { DocumentCaptureModal } from "@/components/modals/DocumentCaptureModal";
 import { PhotoCaptureModal } from "@/components/modals/PhotoCaptureModal";
 
 type Flow = "voz" | "documento" | "foto" | null;
 
-const tiles: { id: Flow; label: string; icon: IconName; hint: string }[] = [
+const tiles: {
+  id: "voz" | "documento" | "foto" | "preguntar";
+  label: string;
+  icon: IconName;
+  hint: string;
+}[] = [
   { id: "voz", label: "Voz", icon: "mic", hint: "Cuéntelo en voz alta" },
   { id: "documento", label: "Documento", icon: "document", hint: "Suba un PDF o factura" },
   { id: "foto", label: "Foto", icon: "camera", hint: "Hágale una foto" },
+  { id: "preguntar", label: "Preguntar", icon: "chat", hint: "Hable con LifeOS" },
 ];
 
 export function CaptureScreen() {
@@ -26,39 +35,29 @@ export function CaptureScreen() {
         Háblelo, súbalo o hágale una foto. LifeOS lo entiende.
       </p>
 
-      <div className="mt-6 grid grid-cols-2 gap-3">
+      <Stagger className="mt-6 grid grid-cols-2 gap-3">
         {tiles.map((t) => (
-          <button
-            key={t.label}
-            onClick={() => setFlow(t.id)}
-            className="group flex flex-col items-start gap-3 rounded-2xl border border-border bg-surface p-5 text-left transition-[border-color,transform] hover:border-ink-3 active:scale-[0.99]"
-          >
-            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--color-accent)_8%,transparent)] text-accent transition-colors group-hover:bg-[color-mix(in_srgb,var(--color-accent)_12%,transparent)]">
-              <Icon name={t.icon} size={24} />
-            </span>
-            <span>
-              <span className="block text-md font-medium text-ink">
-                {t.label}
+          <StaggerItem key={t.id} className="flex">
+            <motion.button
+              onClick={() =>
+                t.id === "preguntar" ? openAssistant() : setFlow(t.id)
+              }
+              whileTap={tapCard}
+              className="group flex w-full flex-col items-start gap-3 rounded-2xl border border-border bg-surface p-5 text-left transition-colors hover:border-ink-3"
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--color-accent)_8%,transparent)] text-accent transition-colors group-hover:bg-[color-mix(in_srgb,var(--color-accent)_12%,transparent)]">
+                <Icon name={t.icon} size={24} />
               </span>
-              <span className="block text-sm text-ink-3">{t.hint}</span>
-            </span>
-          </button>
+              <span>
+                <span className="block text-md font-medium text-ink">
+                  {t.label}
+                </span>
+                <span className="block text-sm text-ink-3">{t.hint}</span>
+              </span>
+            </motion.button>
+          </StaggerItem>
         ))}
-
-        {/* Preguntar tile → assistant */}
-        <button
-          onClick={() => openAssistant()}
-          className="group flex flex-col items-start gap-3 rounded-2xl border border-border bg-surface p-5 text-left transition-[border-color,transform] hover:border-ink-3 active:scale-[0.99]"
-        >
-          <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--color-accent)_8%,transparent)] text-accent transition-colors group-hover:bg-[color-mix(in_srgb,var(--color-accent)_12%,transparent)]">
-            <Icon name="chat" size={24} />
-          </span>
-          <span>
-            <span className="block text-md font-medium text-ink">Preguntar</span>
-            <span className="block text-sm text-ink-3">Hable con LifeOS</span>
-          </span>
-        </button>
-      </div>
+      </Stagger>
 
       {/* Examples */}
       <div className="mt-8 border-t border-border pt-6">

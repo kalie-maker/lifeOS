@@ -1,7 +1,9 @@
 "use client";
 
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ReactNode } from "react";
+import { motion, type HTMLMotionProps } from "motion/react";
 import type { Severity } from "@/state/types";
+import { T, tap, tapCard } from "@/lib/motion";
 import { Icon, type IconName } from "./Icon";
 
 /* ------------------------------------------------------------------ */
@@ -11,20 +13,20 @@ type ButtonVariant = "primary" | "secondary" | "text" | "danger" | "gold";
 
 const buttonStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-accent text-white hover:bg-accent-2 active:bg-accent-2 shadow-[0_1px_2px_rgba(27,58,107,0.18)]",
-  secondary:
-    "bg-surface text-ink border border-border hover:border-ink-3 active:bg-bg",
-  text: "bg-transparent text-accent hover:text-accent-2 active:opacity-70",
+    "bg-accent text-white hover:bg-accent-2 shadow-[0_1px_2px_rgba(27,58,107,0.18)]",
+  secondary: "bg-surface text-ink border border-border hover:border-ink-3",
+  text: "bg-transparent text-accent hover:text-accent-2",
   danger:
     "bg-transparent text-danger border border-[color-mix(in_srgb,var(--color-danger)_30%,transparent)] hover:bg-[color-mix(in_srgb,var(--color-danger)_6%,transparent)]",
   gold: "bg-gold text-ink hover:opacity-90",
 };
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
   variant?: ButtonVariant;
   block?: boolean;
   icon?: IconName;
   size?: "sm" | "md";
+  children?: ReactNode;
 }
 
 export function Button({
@@ -34,6 +36,7 @@ export function Button({
   size = "md",
   className = "",
   children,
+  disabled,
   ...rest
 }: ButtonProps) {
   const pad =
@@ -43,7 +46,10 @@ export function Button({
         ? "px-3.5 py-2"
         : "px-4 py-3";
   return (
-    <button
+    <motion.button
+      disabled={disabled}
+      whileTap={disabled ? undefined : tap}
+      transition={T.press}
       className={`inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed ${pad} ${
         size === "sm" ? "text-sm" : "text-base"
       } ${buttonStyles[variant]} ${block ? "w-full" : ""} ${className}`}
@@ -51,7 +57,7 @@ export function Button({
     >
       {icon && <Icon name={icon} size={size === "sm" ? 16 : 18} />}
       {children}
-    </button>
+    </motion.button>
   );
 }
 
@@ -62,23 +68,23 @@ interface CardProps {
   children: ReactNode;
   className?: string;
   onClick?: () => void;
-  as?: "div" | "button";
 }
 
-export function Card({ children, className = "", onClick, as }: CardProps) {
-  const Comp = (as ?? (onClick ? "button" : "div")) as "div";
-  return (
-    <Comp
-      onClick={onClick}
-      className={`block w-full rounded-2xl border border-border bg-surface p-5 text-left ${
-        onClick
-          ? "transition-[border-color,transform] duration-200 hover:border-ink-3 active:scale-[0.992]"
-          : ""
-      } ${className}`}
-    >
-      {children}
-    </Comp>
-  );
+export function Card({ children, className = "", onClick }: CardProps) {
+  const base = `block w-full rounded-2xl border border-border bg-surface p-5 text-left ${className}`;
+  if (onClick) {
+    return (
+      <motion.button
+        onClick={onClick}
+        whileTap={tapCard}
+        transition={T.press}
+        className={`${base} transition-colors duration-200 hover:border-ink-3`}
+      >
+        {children}
+      </motion.button>
+    );
+  }
+  return <div className={base}>{children}</div>;
 }
 
 /* ------------------------------------------------------------------ */

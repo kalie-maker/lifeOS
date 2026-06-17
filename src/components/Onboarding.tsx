@@ -1,15 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { useApp } from "@/state/AppContext";
 import { Button } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
+import { ease } from "@/lib/motion";
 
 const reassurance = [
   "Solo unas preguntas breves.",
   "Puede cambiarlo todo más adelante.",
   "Nunca más de 2 minutos.",
 ];
+
+const stepVariants = {
+  enter: (d: number) => ({ opacity: 0, x: d >= 0 ? 28 : -28 }),
+  center: { opacity: 1, x: 0, transition: { duration: 0.28, ease } },
+  exit: (d: number) => ({
+    opacity: 0,
+    x: d >= 0 ? -28 : 28,
+    transition: { duration: 0.18, ease },
+  }),
+};
 
 function Choice({
   label,
@@ -21,8 +33,9 @@ function Choice({
   onClick: () => void;
 }) {
   return (
-    <button
+    <motion.button
       onClick={onClick}
+      whileTap={{ scale: 0.99 }}
       className={`flex w-full items-center justify-between rounded-xl border p-4 text-left text-base transition-colors ${
         selected
           ? "border-accent bg-[color-mix(in_srgb,var(--color-accent)_6%,transparent)] text-ink"
@@ -30,12 +43,19 @@ function Choice({
       }`}
     >
       {label}
-      {selected && (
-        <span className="text-accent">
-          <Icon name="check" size={18} strokeWidth={2.2} />
-        </span>
-      )}
-    </button>
+      <AnimatePresence>
+        {selected && (
+          <motion.span
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            className="text-accent"
+          >
+            <Icon name="check" size={18} strokeWidth={2.2} />
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </motion.button>
   );
 }
 
@@ -50,11 +70,14 @@ export function Onboarding() {
   const [avisos, setAvisos] = useState<string | null>("manana");
 
   const total = 7;
+  const [dir, setDir] = useState(1);
 
   function next() {
+    setDir(1);
     setStep((s) => Math.min(s + 1, total - 1));
   }
   function back() {
+    setDir(-1);
     setStep((s) => Math.max(s - 1, 0));
   }
   function finish() {
@@ -76,15 +99,30 @@ export function Onboarding() {
         {Array.from({ length: total }).map((_, i) => (
           <span
             key={i}
-            className={`h-[3px] flex-1 rounded-full transition-colors duration-300 ${
-              i <= step ? "bg-accent" : "bg-border"
-            }`}
-          />
+            className="h-[3px] flex-1 overflow-hidden rounded-full bg-border"
+          >
+            <motion.span
+              className="block h-full origin-left rounded-full bg-accent"
+              initial={false}
+              animate={{ scaleX: i <= step ? 1 : 0 }}
+              transition={{ duration: 0.4, ease }}
+            />
+          </span>
         ))}
       </div>
 
-      <div className="los-fade-in mt-12 flex-1" key={step}>
-        {step === 0 && (
+      <div className="relative mt-12 flex-1">
+        <AnimatePresence mode="wait" custom={dir} initial={false}>
+          <motion.div
+            key={step}
+            custom={dir}
+            variants={stepVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            className="h-full"
+          >
+            {step === 0 && (
           <>
             <p className="text-sm uppercase tracking-[0.12em] text-ink-3">
               Bienvenido
@@ -216,6 +254,8 @@ export function Onboarding() {
             </p>
           </div>
         )}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Footer */}

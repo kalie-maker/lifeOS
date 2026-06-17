@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "motion/react";
 import { useApp } from "@/state/AppContext";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button, SectionLabel } from "@/components/ui/primitives";
@@ -89,9 +90,10 @@ export function PersonaCheckInModal({
           <SectionLabel>Estado de ánimo</SectionLabel>
           <div className="mt-2 flex gap-1.5">
             {moods.map((m) => (
-              <button
+              <motion.button
                 key={m}
                 onClick={() => setMood(m)}
+                whileTap={{ scale: 0.92 }}
                 className={`flex-1 rounded-xl border px-1 py-2.5 text-xs leading-tight transition-colors ${
                   mood === m
                     ? "border-accent bg-accent text-white"
@@ -99,7 +101,7 @@ export function PersonaCheckInModal({
                 }`}
               >
                 {moodLabels[m]}
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>
@@ -142,9 +144,10 @@ export function PersonaCheckInModal({
           <SectionLabel>Entrenamiento hoy</SectionLabel>
           <div className="mt-2 flex flex-wrap gap-2">
             {workouts.map((w) => (
-              <button
+              <motion.button
                 key={w}
                 onClick={() => setWorkout(w)}
+                whileTap={{ scale: 0.94 }}
                 className={`rounded-full border px-3.5 py-2 text-sm transition-colors ${
                   workout === w
                     ? "border-accent bg-accent text-white"
@@ -152,7 +155,7 @@ export function PersonaCheckInModal({
                 }`}
               >
                 {w === "ninguno" ? "No he entrenado" : workoutLabels[w]}
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>

@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "motion/react";
 import { useApp } from "@/state/AppContext";
 import type { Mood, PersonaDay } from "@/state/types";
 import { Button, SectionLabel } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
+import { Stagger, StaggerItem } from "@/components/ui/motion";
+import { ease } from "@/lib/motion";
 import { moodLabels, moodScore, workoutLabels } from "@/data/mock/persona";
 import { PersonaCheckInModal } from "@/components/modals/PersonaCheckInModal";
 
@@ -53,15 +56,18 @@ function DayRow({ day }: { day: PersonaDay }) {
         {day.workout === "ninguno" ? "Sin entreno" : workoutLabels[day.workout]}
       </span>
       {/* energy bar */}
-      <span className="flex shrink-0 gap-0.5">
+      <span className="flex shrink-0 items-end gap-0.5">
         {[1, 2, 3, 4, 5].map((n) => (
-          <span
+          <motion.span
             key={n}
-            className="h-3 w-1 rounded-full"
+            className="h-3 w-1 origin-bottom rounded-full"
             style={{
               backgroundColor:
                 n <= day.energy ? "var(--color-accent)" : "var(--color-border)",
             }}
+            initial={{ scaleY: 0 }}
+            animate={{ scaleY: 1 }}
+            transition={{ duration: 0.32, ease, delay: 0.1 + n * 0.04 }}
           />
         ))}
       </span>
@@ -113,9 +119,9 @@ export function PersonaScreen() {
           </p>
         </div>
       ) : (
-        <>
+        <Stagger>
           {/* Resumen semanal */}
-          <section className="mt-7">
+          <StaggerItem className="mt-7 block">
             <SectionLabel>Resumen semanal</SectionLabel>
             <div className="mt-2 rounded-2xl border border-border bg-surface p-5">
               <p className="text-base leading-relaxed text-ink">
@@ -130,10 +136,10 @@ export function PersonaScreen() {
                 .
               </p>
             </div>
-          </section>
+          </StaggerItem>
 
           {/* Métricas */}
-          <section className="mt-6">
+          <StaggerItem className="mt-6 block">
             <SectionLabel>Métricas</SectionLabel>
             <div className="mt-2 grid grid-cols-2 gap-3">
               <Stat label="Sueño medio" value={avgSleep.toFixed(1)} unit="h" />
@@ -149,20 +155,20 @@ export function PersonaScreen() {
               />
               <Stat label="Estrés medio" value={avgStress.toFixed(1)} unit="/ 5" />
             </div>
-          </section>
+          </StaggerItem>
 
           {/* Últimos días */}
-          <section className="mt-6">
+          <StaggerItem className="mt-6 block">
             <SectionLabel>Últimos días</SectionLabel>
             <div className="mt-1 divide-y divide-border rounded-2xl border border-border bg-surface px-4">
               {ordered.map((d) => (
                 <DayRow key={d.id} day={d} />
               ))}
             </div>
-          </section>
+          </StaggerItem>
 
           {/* Insights cruzados */}
-          <section className="mt-6">
+          <StaggerItem className="mt-6 block">
             <div className="flex items-center gap-2 text-accent">
               <Icon name="sparkle" size={16} />
               <span className="text-xs font-medium uppercase tracking-[0.12em]">
@@ -185,10 +191,10 @@ export function PersonaScreen() {
                 de ánimo.
               </InsightCard>
             </div>
-          </section>
+          </StaggerItem>
 
           {/* Hábitos */}
-          <section className="mt-6">
+          <StaggerItem className="mt-6 block">
             <SectionLabel>Hábitos</SectionLabel>
             <div className="mt-2 space-y-2">
               <HabitRow
@@ -202,8 +208,8 @@ export function PersonaScreen() {
                 done={persona.filter((d) => d.sleepHours >= 7).length >= 3}
               />
             </div>
-          </section>
-        </>
+          </StaggerItem>
+        </Stagger>
       )}
 
       <PersonaCheckInModal open={checkIn} onClose={() => setCheckIn(false)} />

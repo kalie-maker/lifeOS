@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { motion } from "motion/react";
 import { useApp } from "@/state/AppContext";
 import { Sheet } from "@/components/ui/Sheet";
 import {
@@ -10,7 +11,31 @@ import {
   SectionLabel,
 } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
+import { Skeleton } from "@/components/ui/motion";
+import { fadeUp } from "@/lib/motion";
 import { mockDocuments, type MockDocument } from "@/data/mock/documents";
+
+function AnalysisSkeleton() {
+  return (
+    <div className="space-y-5">
+      <Skeleton className="h-3 w-32" />
+      <Skeleton className="h-4 w-48" />
+      <div className="space-y-2 rounded-xl border border-border p-4">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="flex justify-between">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+        ))}
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-5/6" />
+        <Skeleton className="h-3 w-2/3" />
+      </div>
+    </div>
+  );
+}
 
 function Checkbox({
   checked,
@@ -62,10 +87,19 @@ export function DocumentCaptureModal({
 }) {
   const { applyDocumentCapture, setTab } = useApp();
   const [doc, setDoc] = useState<MockDocument | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const timer = useRef<number | null>(null);
+
+  useEffect(() => () => {
+    if (timer.current) window.clearTimeout(timer.current);
+  }, []);
 
   function pick(d: MockDocument) {
     setDoc(d);
+    setAnalyzing(true);
+    if (timer.current) window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setAnalyzing(false), 900);
     const init: Record<string, boolean> = {};
     d.keepOptions
       .filter((o) => o.id !== "original")
@@ -75,6 +109,7 @@ export function DocumentCaptureModal({
 
   function reset() {
     setDoc(null);
+    setAnalyzing(false);
     setSelected({});
   }
 
@@ -118,9 +153,10 @@ export function DocumentCaptureModal({
             </p>
             <div className="mt-4 space-y-2.5">
               {mockDocuments.map((d) => (
-                <button
+                <motion.button
                   key={d.id}
                   onClick={() => pick(d)}
+                  whileTap={{ scale: 0.985 }}
                   className="flex w-full items-center gap-3 rounded-xl border border-border bg-surface p-3.5 text-left transition-colors hover:border-ink-3"
                 >
                   <ModuleGlyph icon={d.icon} size={40} />
@@ -133,12 +169,24 @@ export function DocumentCaptureModal({
                     </span>
                   </span>
                   <Icon name="chevron-right" size={16} className="text-ink-3" />
-                </button>
+                </motion.button>
               ))}
             </div>
           </>
+        ) : analyzing ? (
+          <div>
+            <div className="flex items-center gap-2 text-accent">
+              <Icon name="sparkle" size={16} />
+              <span className="text-xs font-medium uppercase tracking-[0.12em]">
+                Analizando «{doc.name}»…
+              </span>
+            </div>
+            <div className="mt-4">
+              <AnalysisSkeleton />
+            </div>
+          </div>
         ) : (
-          <div className="los-fade-in">
+          <motion.div variants={fadeUp} initial="initial" animate="animate">
             {doc.taxNotice && (
               <div className="mb-4">
                 <NoticeBanner>
@@ -245,7 +293,7 @@ export function DocumentCaptureModal({
                 Guardar documento completo
               </button>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
     </Sheet>

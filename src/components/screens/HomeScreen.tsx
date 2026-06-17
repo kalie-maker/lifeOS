@@ -12,7 +12,10 @@ import {
   StatusDot,
 } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
+import { Stagger, StaggerItem } from "@/components/ui/motion";
 import { spaceIcons } from "@/data/mock/spaces";
+import { motion } from "motion/react";
+import { fadeUp } from "@/lib/motion";
 
 const VISIBLE = 2;
 
@@ -20,7 +23,7 @@ function AttentionRow({ item }: { item: AttentionItem }) {
   const { resolveAttention } = useApp();
   const glyph = item.spaceId ? spaceIcons[item.spaceId] : "alert";
   return (
-    <Card className="los-rise">
+    <Card>
       <div className="flex items-start gap-3.5">
         <div className="relative">
           <ModuleGlyph icon={glyph} size={42} />
@@ -105,56 +108,61 @@ export function HomeScreen() {
       {isEmpty ? (
         <EmptyHome onStart={() => setTab("capturar")} />
       ) : (
-        <>
+        <Stagger>
           {/* Hoy */}
-          <Card className="mt-6 los-rise">
-            <div className="flex items-center justify-between">
-              <div>
-                <SectionLabel>Hoy</SectionLabel>
-                <p className="mt-1.5 text-md text-ink">
-                  {todayParts.length
-                    ? todayParts.join(" · ")
-                    : "Sin compromisos. Un día tranquilo."}
-                </p>
+          <StaggerItem className="mt-6">
+            <Card>
+              <div className="flex items-center justify-between">
+                <div>
+                  <SectionLabel>Hoy</SectionLabel>
+                  <p className="mt-1.5 text-md text-ink">
+                    {todayParts.length
+                      ? todayParts.join(" · ")
+                      : "Sin compromisos. Un día tranquilo."}
+                  </p>
+                </div>
+                <span className="font-mono text-sm text-ink-3">
+                  {TODAY.getDate()}
+                </span>
               </div>
-              <span className="font-mono text-sm text-ink-3">
-                {TODAY.getDate()}
-              </span>
-            </div>
-            <div className="mt-4">
-              <Button
-                block
-                icon="sparkle"
-                onClick={() => openAssistant("¿Qué tengo hoy?")}
-              >
-                Iniciar mi día
-              </Button>
-            </div>
-          </Card>
+              <div className="mt-4">
+                <Button
+                  block
+                  icon="sparkle"
+                  onClick={() => openAssistant("¿Qué tengo hoy?")}
+                >
+                  Iniciar mi día
+                </Button>
+              </div>
+            </Card>
+          </StaggerItem>
 
           {/* Atención */}
           {visibleAttention.length > 0 && (
-            <section className="mt-7">
+            <StaggerItem className="mt-7 block">
               <SectionLabel>Requiere su atención</SectionLabel>
-              <div className="mt-3 space-y-3">
+              <Stagger className="mt-3 space-y-3">
                 {shown.map((item) => (
-                  <AttentionRow key={item.id} item={item} />
+                  <StaggerItem key={item.id}>
+                    <AttentionRow item={item} />
+                  </StaggerItem>
                 ))}
-              </div>
+              </Stagger>
               {hiddenCount > 0 && !expanded && (
-                <button
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
                   onClick={() => setExpanded(true)}
                   className="mt-3 flex w-full items-center justify-center gap-1 rounded-xl py-2.5 text-sm font-medium text-accent transition-colors hover:bg-surface"
                 >
                   Ver todos ({hiddenCount} más)
                   <Icon name="chevron-down" size={16} />
-                </button>
+                </motion.button>
               )}
-            </section>
+            </StaggerItem>
           )}
 
           {/* Acciones */}
-          <div className="mt-8 flex gap-3">
+          <StaggerItem className="mt-8 flex gap-3">
             <Button
               variant="secondary"
               block
@@ -171,8 +179,8 @@ export function HomeScreen() {
             >
               Añadir
             </Button>
-          </div>
-        </>
+          </StaggerItem>
+        </Stagger>
       )}
     </div>
   );
@@ -180,7 +188,12 @@ export function HomeScreen() {
 
 function EmptyHome({ onStart }: { onStart: () => void }) {
   return (
-    <div className="los-rise mt-8 rounded-2xl border border-border bg-surface p-6 text-center">
+    <motion.div
+      variants={fadeUp}
+      initial="initial"
+      animate="animate"
+      className="mt-8 rounded-2xl border border-border bg-surface p-6 text-center"
+    >
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[color-mix(in_srgb,var(--color-accent)_8%,transparent)] text-accent">
         <Icon name="sparkle" size={26} />
       </div>
@@ -194,6 +207,6 @@ function EmptyHome({ onStart }: { onStart: () => void }) {
           Empezar a capturar
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 }

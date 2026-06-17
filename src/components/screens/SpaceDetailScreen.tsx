@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import { useApp } from "@/state/AppContext";
 import type { SpaceData, VisualProject } from "@/state/types";
 import { Icon } from "@/components/ui/Icon";
@@ -9,6 +10,8 @@ import {
   SectionLabel,
   StatusDot,
 } from "@/components/ui/primitives";
+import { Stagger, StaggerItem } from "@/components/ui/motion";
+import { ease } from "@/lib/motion";
 import { spaceIcons } from "@/data/mock/spaces";
 import { PhotoFrame } from "@/components/modals/PhotoCaptureModal";
 
@@ -40,16 +43,22 @@ export function SpaceDetailScreen({ space }: { space: SpaceData }) {
   const { closeSpace, setTab } = useApp();
 
   return (
-    <div className="absolute inset-0 z-40 flex flex-col bg-bg">
+    <motion.div
+      initial={{ opacity: 0, x: 28 }}
+      animate={{ opacity: 1, x: 0, transition: { duration: 0.28, ease } }}
+      exit={{ opacity: 0, x: 28, transition: { duration: 0.2, ease } }}
+      className="absolute inset-0 z-40 flex flex-col bg-bg"
+    >
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-border bg-surface/95 px-4 py-3 backdrop-blur-md">
-        <button
+        <motion.button
           onClick={closeSpace}
           aria-label="Volver"
+          whileTap={{ scale: 0.9 }}
           className="flex h-9 w-9 items-center justify-center rounded-full text-ink-2 transition-colors hover:bg-bg"
         >
           <Icon name="chevron-right" size={20} className="rotate-180" />
-        </button>
+        </motion.button>
         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-bg text-ink-2">
           <Icon name={spaceIcons[space.id]} size={20} />
         </span>
@@ -61,7 +70,7 @@ export function SpaceDetailScreen({ space }: { space: SpaceData }) {
         </div>
       </div>
 
-      <div className="los-fade-in min-h-0 flex-1 overflow-y-auto px-5 py-5">
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
         {space.notice && (
           <div className="mb-5">
             <NoticeBanner icon="shield">{space.notice}</NoticeBanner>
@@ -89,9 +98,9 @@ export function SpaceDetailScreen({ space }: { space: SpaceData }) {
         ) : (
           <>
             {/* Data sections */}
-            <div className="space-y-5">
+            <Stagger className="space-y-5">
               {space.sections.map((sec) => (
-                <section key={sec.title}>
+                <StaggerItem key={sec.title} className="block">
                   <SectionLabel>{sec.title}</SectionLabel>
                   <dl className="mt-2 divide-y divide-border rounded-xl border border-border bg-surface">
                     {sec.rows.map((row) => (
@@ -119,9 +128,9 @@ export function SpaceDetailScreen({ space }: { space: SpaceData }) {
                       </div>
                     ))}
                   </dl>
-                </section>
+                </StaggerItem>
               ))}
-            </div>
+            </Stagger>
 
             {/* Visual projects */}
             {space.projects.length > 0 && (
@@ -173,6 +182,6 @@ export function SpaceDetailScreen({ space }: { space: SpaceData }) {
           </>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

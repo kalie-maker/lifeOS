@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "motion/react";
 import { useApp } from "@/state/AppContext";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button, Pill, SectionLabel } from "@/components/ui/primitives";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { Stagger, StaggerItem } from "@/components/ui/motion";
 
 type View = "menu" | "biblioteca" | "privacidad" | "avisos";
 
@@ -28,8 +30,9 @@ function MenuItem({
   danger?: boolean;
 }) {
   return (
-    <button
+    <motion.button
       onClick={onClick}
+      whileTap={{ scale: 0.985 }}
       className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-bg"
     >
       <span className={danger ? "text-danger" : "text-ink-2"}>
@@ -39,7 +42,7 @@ function MenuItem({
         {label}
       </span>
       <Icon name="chevron-right" size={16} className="text-ink-3" />
-    </button>
+    </motion.button>
   );
 }
 
@@ -212,9 +215,9 @@ export function ProfileSheet() {
                 Todavía no ha analizado ningún documento.
               </p>
             ) : (
-              <div className="mt-4 space-y-3">
+              <Stagger className="mt-4 space-y-3">
                 {library.map((doc) => (
-                  <div
+                  <StaggerItem
                     key={doc.id}
                     className="rounded-xl border border-border bg-surface p-4"
                   >
@@ -233,7 +236,7 @@ export function ProfileSheet() {
                       {doc.summary}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-1.5">
-                      <Pill tone={doc.originalKept ? "neutral" : "neutral"}>
+                      <Pill tone="neutral">
                         {doc.originalKept
                           ? "Archivo original guardado"
                           : "Archivo original no guardado"}
@@ -245,9 +248,9 @@ export function ProfileSheet() {
                         <Pill tone="warn">Pendiente de revisar</Pill>
                       )}
                     </div>
-                  </div>
+                  </StaggerItem>
                 ))}
-              </div>
+              </Stagger>
             )}
           </div>
         )}

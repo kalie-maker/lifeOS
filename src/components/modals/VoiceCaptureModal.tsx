@@ -5,13 +5,14 @@ import { useApp } from "@/state/AppContext";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button, ModuleGlyph, SectionLabel } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
+import { Skeleton, Stagger, StaggerItem } from "@/components/ui/motion";
 import {
   voiceResults,
   voiceTranscript,
   type LineTag,
 } from "@/data/mock/captures";
 
-type Phase = "listening" | "transcript" | "analysis";
+type Phase = "listening" | "transcript" | "analyzing" | "analysis";
 
 const tagColor: Record<LineTag, string> = {
   ok: "var(--color-ok)",
@@ -69,6 +70,14 @@ export function VoiceCaptureModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
+  // Simulated analysis — show a skeleton, then reveal.
+  useEffect(() => {
+    if (phase !== "analyzing") return;
+    const id = window.setTimeout(() => setPhase("analysis"), 1000);
+    timers.current.push(id);
+    return () => window.clearTimeout(id);
+  }, [phase]);
+
   const typingDone = typed.length >= voiceTranscript.length;
 
   function confirm() {
@@ -87,7 +96,7 @@ export function VoiceCaptureModal({
     >
       <div className="px-5 pb-7">
         {/* Mic + status */}
-        {phase !== "analysis" && (
+        {(phase === "listening" || phase === "transcript") && (
           <div className="flex flex-col items-center py-6">
             <button
               onClick={() => {
@@ -140,9 +149,38 @@ export function VoiceCaptureModal({
 
         {phase === "transcript" && typingDone && (
           <div className="mt-5">
-            <Button block icon="sparkle" onClick={() => setPhase("analysis")}>
+            <Button block icon="sparkle" onClick={() => setPhase("analyzing")}>
               Analizar con LifeOS
             </Button>
+          </div>
+        )}
+
+        {/* Analyzing — skeleton */}
+        {phase === "analyzing" && (
+          <div>
+            <div className="flex items-center gap-2 text-accent">
+              <Icon name="sparkle" size={16} />
+              <span className="text-xs font-medium uppercase tracking-[0.12em]">
+                Analizando su captura…
+              </span>
+            </div>
+            <div className="mt-4 space-y-4">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="rounded-xl border border-border bg-surface p-4"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Skeleton className="h-8 w-8" rounded="rounded-xl" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                  <div className="mt-3 space-y-2">
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-4/5" />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -156,9 +194,9 @@ export function VoiceCaptureModal({
               </span>
             </div>
 
-            <div className="los-stagger mt-4 space-y-4">
+            <Stagger className="mt-4 space-y-4">
               {voiceResults.map((mod) => (
-                <div
+                <StaggerItem
                   key={mod.module}
                   className="rounded-xl border border-border bg-surface p-4"
                 >
@@ -192,9 +230,9 @@ export function VoiceCaptureModal({
                       </li>
                     ))}
                   </ul>
-                </div>
+                </StaggerItem>
               ))}
-            </div>
+            </Stagger>
 
             <div className="mt-6 space-y-2.5">
               <Button block icon="check" onClick={confirm}>

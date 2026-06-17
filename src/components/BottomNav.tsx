@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import { useApp } from "@/state/AppContext";
 import type { Tab } from "@/state/types";
 import { Icon, type IconName } from "./ui/Icon";
@@ -24,19 +25,22 @@ export function BottomNav() {
 
           if (isCapture) {
             return (
-              <button
+              <motion.button
                 key={item.tab}
                 onClick={() => setTab(item.tab)}
+                whileTap={{ scale: 0.92 }}
                 className="flex flex-1 flex-col items-center gap-1"
                 aria-label="Capturar"
               >
-                <span
-                  className={`flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-[0_4px_14px_rgba(27,58,107,0.35)] transition-transform duration-200 ${
-                    active ? "bg-accent-2 scale-105" : "bg-accent"
-                  } active:scale-95`}
+                <motion.span
+                  animate={{ scale: active ? 1.06 : 1 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 26 }}
+                  className={`flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-[0_4px_14px_rgba(27,58,107,0.35)] ${
+                    active ? "bg-accent-2" : "bg-accent"
+                  }`}
                 >
                   <Icon name="plus" size={24} strokeWidth={2} />
-                </span>
+                </motion.span>
                 <span
                   className={`text-[10px] tracking-wide ${
                     active ? "text-accent" : "text-ink-3"
@@ -44,24 +48,31 @@ export function BottomNav() {
                 >
                   {item.label}
                 </span>
-              </button>
+              </motion.button>
             );
           }
 
           return (
-            <button
+            <motion.button
               key={item.tab}
               onClick={() => setTab(item.tab)}
+              whileTap={{ scale: 0.9 }}
               className="flex flex-1 flex-col items-center gap-1 py-1"
               aria-current={active ? "page" : undefined}
             >
-              <span
+              <motion.span
+                animate={{ scale: active ? 1.1 : 1, y: active ? -1 : 0 }}
+                transition={{ type: "spring", stiffness: 420, damping: 26 }}
                 className={`transition-colors duration-200 ${
                   active ? "text-accent" : "text-ink-3"
                 }`}
               >
-                <Icon name={item.icon} size={23} strokeWidth={active ? 1.9 : 1.6} />
-              </span>
+                <Icon
+                  name={item.icon}
+                  size={23}
+                  strokeWidth={active ? 1.9 : 1.6}
+                />
+              </motion.span>
               <span
                 className={`text-[10px] tracking-wide transition-colors duration-200 ${
                   active ? "text-accent font-medium" : "text-ink-3"
@@ -69,7 +80,7 @@ export function BottomNav() {
               >
                 {item.label}
               </span>
-            </button>
+            </motion.button>
           );
         })}
       </div>

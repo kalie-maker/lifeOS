@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { motion } from "motion/react";
 import { useApp } from "@/state/AppContext";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button, NoticeBanner, SectionLabel } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
+import { Skeleton, Stagger, StaggerItem } from "@/components/ui/motion";
+import { fadeUp } from "@/lib/motion";
 import { photoScenarios, type PhotoScenario } from "@/data/mock/captures";
 
 /** Abstract SVG stand-in for the captured photo (no real image). */
@@ -51,12 +54,30 @@ export function PhotoCaptureModal({
 }) {
   const { applyPhotoCapture, openSpace, setTab } = useApp();
   const [scene, setScene] = useState<PhotoScenario | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const timer = useRef<number | null>(null);
+
+  useEffect(() => () => {
+    if (timer.current) window.clearTimeout(timer.current);
+  }, []);
+
+  function pickScene(s: PhotoScenario) {
+    setScene(s);
+    setAnalyzing(true);
+    if (timer.current) window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setAnalyzing(false), 950);
+  }
+
+  function back() {
+    setScene(null);
+    setAnalyzing(false);
+  }
 
   function finish() {
     if (!scene) return;
     applyPhotoCapture(scene.id);
     const target = scene.spaceId;
-    setScene(null);
+    back();
     onClose();
     setTab("espacios");
     openSpace(target);
@@ -66,7 +87,7 @@ export function PhotoCaptureModal({
     <Sheet
       open={open}
       onClose={() => {
-        setScene(null);
+        back();
         onClose();
       }}
       side="bottom"
@@ -75,7 +96,7 @@ export function PhotoCaptureModal({
       headerRight={
         scene ? (
           <button
-            onClick={() => setScene(null)}
+            onClick={back}
             className="rounded-full px-2 py-1 text-sm text-accent"
           >
             Atrás
@@ -92,9 +113,10 @@ export function PhotoCaptureModal({
             </p>
             <div className="mt-4 space-y-3">
               {photoScenarios.map((s) => (
-                <button
+                <motion.button
                   key={s.id}
-                  onClick={() => setScene(s)}
+                  onClick={() => pickScene(s)}
+                  whileTap={{ scale: 0.985 }}
                   className="flex w-full items-center gap-3.5 rounded-2xl border border-border bg-surface p-3 text-left transition-colors hover:border-ink-3"
                 >
                   <div className="w-28 shrink-0">
@@ -108,12 +130,12 @@ export function PhotoCaptureModal({
                       {s.prompt}
                     </span>
                   </span>
-                </button>
+                </motion.button>
               ))}
             </div>
           </>
         ) : (
-          <div className="los-fade-in">
+          <div>
             <PhotoFrame palette={scene.palette} label={scene.title} />
 
             {/* Question + intent */}
@@ -126,42 +148,61 @@ export function PhotoCaptureModal({
             <div className="mt-5 flex items-center gap-2 text-accent">
               <Icon name="sparkle" size={16} />
               <span className="text-xs font-medium uppercase tracking-[0.12em]">
-                Análisis de LifeOS
+                {analyzing ? "Analizando la imagen…" : "Análisis de LifeOS"}
               </span>
             </div>
-            <ul className="mt-3 space-y-2">
-              {scene.analysis.map((line) => (
-                <li
-                  key={line}
-                  className="flex items-start gap-2.5 text-sm text-ink"
-                >
-                  <span className="mt-[5px] h-2 w-2 shrink-0 rounded-full bg-accent" />
-                  {line}
-                </li>
-              ))}
-            </ul>
 
-            {scene.notice && (
-              <div className="mt-4">
-                <NoticeBanner>{scene.notice}</NoticeBanner>
+            {analyzing ? (
+              <div className="mt-3 space-y-2.5">
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-5/6" />
+                <Skeleton className="h-3 w-3/4" />
+                <Skeleton className="mt-4 h-16 w-full" rounded="rounded-xl" />
               </div>
+            ) : (
+              <motion.div variants={fadeUp} initial="initial" animate="animate">
+                <Stagger className="mt-3 space-y-2">
+                  {scene.analysis.map((line) => (
+                    <StaggerItem
+                      key={line}
+                      className="flex items-start gap-2.5 text-sm text-ink"
+                    >
+                      <span className="mt-[5px] h-2 w-2 shrink-0 rounded-full bg-accent" />
+                      {line}
+                    </StaggerItem>
+                  ))}
+                </Stagger>
+
+                {scene.notice && (
+                  <div className="mt-4">
+                    <NoticeBanner>{scene.notice}</NoticeBanner>
+                  </div>
+                )}
+
+                <div className="mt-5 rounded-xl border border-border bg-bg px-4 py-3">
+                  <SectionLabel>Presupuesto orientativo</SectionLabel>
+                  <p className="mt-1 font-mono text-md text-ink">
+                    {scene.budget}
+                  </p>
+                </div>
+
+                <div className="mt-6 space-y-2.5">
+                  <Button block icon="check" onClick={finish}>
+                    {scene.primaryAction}
+                  </Button>
+                  {scene.secondaryAction && (
+                    <Button
+                      variant="secondary"
+                      block
+                      icon="search"
+                      onClick={finish}
+                    >
+                      {scene.secondaryAction}
+                    </Button>
+                  )}
+                </div>
+              </motion.div>
             )}
-
-            <div className="mt-5 rounded-xl border border-border bg-bg px-4 py-3">
-              <SectionLabel>Presupuesto orientativo</SectionLabel>
-              <p className="mt-1 font-mono text-md text-ink">{scene.budget}</p>
-            </div>
-
-            <div className="mt-6 space-y-2.5">
-              <Button block icon="check" onClick={finish}>
-                {scene.primaryAction}
-              </Button>
-              {scene.secondaryAction && (
-                <Button variant="secondary" block icon="search" onClick={finish}>
-                  {scene.secondaryAction}
-                </Button>
-              )}
-            </div>
           </div>
         )}
       </div>
